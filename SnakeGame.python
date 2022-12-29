@@ -1,0 +1,201 @@
+'''
+Purpose: (What does an object of this class represent?)
+Instance variables: (What are the instance variables for this class,
+and what does each represent in a few words?)
+Methods: (What methods does this class have, and what does each do in a few words?)
+'''
+import turtle, random, math
+
+class Game:
+    '''
+    Purpose: (What does an object of this class represent?) This is the main class for the game.  It is the main body and calls the other classes to make the game work together
+    Instance variables: (What are the instance variables for this class,
+    and what does each represent in a few words?)
+    food is calling the Food class
+    player is calling the Snake class
+
+    Methods: (What methods does this class have, and what does each do in a few words?)
+    Gameloop keeps the game running and makes it so the snake is moving in the direction that it is supposed to every interval.
+    '''
+    def __init__(self):
+        #Setup 700x700 pixel window
+        turtle.setup(700, 700)
+
+        #Bottom left of screen is (-40, -40), top right is (640, 640)
+        turtle.setworldcoordinates(-40, -40, 640, 640)
+        cv = turtle.getcanvas()
+        cv.adjustScrolls()
+
+        #Ensure turtle is running as fast as possible
+        turtle.hideturtle()
+        turtle.delay(0)
+        turtle.speed(0)
+
+        #Draw the board as a square from (0,0) to (600,600)
+        for i in range(4):
+            turtle.forward(600)
+            turtle.left(90)
+        self.food=Food()
+        self.food.set_food()
+        self.player = Snake(x=315, y=315, color='green')
+        self.gameloop()
+        turtle.onkeypress(self.player.go_down, "Down")
+        turtle.onkeypress(self.player.go_up, "Up")
+        turtle.onkeypress(self.player.go_right, "Right")
+        turtle.onkeypress(self.player.go_left, "Left")
+        turtle.listen()
+        turtle.mainloop()
+
+
+    def gameloop(self):
+        self.player.move(self.food)
+        # if self.player.check_collision()==False:
+        if self.player.x<600 and self.player.x>0 and self.player.y<600 and self.player.y>0:
+            if self.player.check_collision()==False:
+                turtle.ontimer(self.gameloop, 200)
+            else:
+                write=turtle.Turtle()
+                write.penup()
+                write.goto(200,200)
+                write.pendown()
+                write.write("Game over", font=("Arial", 16, "normal"))
+                write.ht()
+
+        else:
+            write=turtle.Turtle()
+            write.penup()
+            write.goto(200,200)
+            write.pendown()
+            write.write("Game over", font=("Arial", 16, "normal"))
+            write.ht()
+
+
+
+class Snake(Game):
+    '''
+    Purpose: (What does an object of this class represent?) This is the snake class.  It is focused around the snake being built and it moving/working within the game.
+    Instance variables: (What are the instance variables for this class,
+    and what does each represent in a few words?)
+    x= where the snake is on the x coordinate
+    y= where the snake is on the y coordinate
+    color= color of the Snake
+    segments= list of all the segments of the Snake
+    vx= velocity of the x direction
+    vy= velocity of the y direction
+    Methods: (What methods does this class have, and what does each do in a few words?)
+    Grow increases the length of the snake by one
+    Move moves all of the parts of the snake to where the following part of the snake is.
+    check collision checks to see if the head crashes into any of the other parts of the snake.
+    go down changes the direction of the snake to Down
+    go up changes the direction of the snake to up
+    go left changes the direction of the snake to left
+    go right changes the direction of the snake to right
+    '''
+    def __init__(self, x,y, color):
+        #Snake.__init__(self, x, y, color):
+        self.x=x
+        self.y=y
+        self.color=color
+        self.segments=[]
+        self.vx=30
+        self.vy=0
+        self.grow()
+
+        #self.go_down()
+    def grow(self):
+        head = turtle.Turtle()
+        head.speed(0)
+        head.color("black",self.color)
+        head.shape('square')
+        head.penup()
+        head.shapesize(1.5, 1.5)
+        #if len(self.segments)==0:
+        head.setpos(self.x, self.y)
+
+        #else:
+            #head.setpos(self.segments[-1].pos())
+
+        self.segments.append(head)
+        #print(len(self.segments))
+        #print(self.segments)
+    def move(self, food):
+        self.x=self.x+self.vx
+        self.y=self.y+self.vy
+        head=self.segments[-1]
+
+        #for all the body segments besides the last one (head)
+        #for segment in self.segments[:-1]:
+        for i in range(len(self.segments[:-1])):
+            point=self.segments[i+1].pos()
+            self.segments[i].setpos(point)
+
+        head.goto(self.x, self.y)
+        if head.distance(food.x, food.y) < 25:
+            food.set_food()
+
+            self.grow()
+
+        #self.segments[-1].setpos(self.x, self.y)
+
+    def check_collision(self):
+        points=[]
+        points.clear()
+
+        #adds all the points of the segments, and adds it to a list
+        for i in range(len(self.segments[:-2])):
+            points.append(self.segments[i].pos())
+
+        if self.segments[-1].pos() in points:
+
+            return True
+        else:
+            return False
+
+    def go_down(self):
+        self.vx=0
+        self.vy=-30
+    def go_left(self):
+        self.vx=-30
+        self.vy=0
+    def go_right(self):
+        self.vx=30
+        self.vy=0
+    def go_up(self):
+        self.vx=0
+        self.vy=30
+
+class Food:
+    '''
+    Purpose: (What does an object of this class represent?) it is the food class to it involes the food being created and moved when eaten
+    Instance variables: (What are the instance variables for this class,
+    and what does each represent in a few words?)
+    x= where the food is on the x axis
+    y= where the food is on the y axis
+    color is the color of the food which is set to red
+    food is created as a turtle
+    Methods: (What methods does this class have, and what does each do in a few words?)
+    set food places the food where it should be on the map.
+    '''
+    def __init__(self):
+        self.x= 15 + 30*random.randint(0,19)
+        self.y= 15 + 30*random.randint(0,19)
+        self.color='red'
+        self.food=turtle.Turtle()
+    def set_food(self):
+        self.x= 15 + 30*random.randint(0,19)
+        self.y= 15 + 30*random.randint(0,19)
+        self.food.penup()
+        self.food.shape("circle")
+        self.food.color(self.color)
+        #print(self.x, self.y)
+        self.food.goto(self.x, self.y)
+        self.food.pendown()
+
+
+
+
+
+
+
+
+Game()
