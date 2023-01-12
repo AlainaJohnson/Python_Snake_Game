@@ -1,9 +1,4 @@
-'''
-Purpose: (What does an object of this class represent?)
-Instance variables: (What are the instance variables for this class,
-and what does each represent in a few words?)
-Methods: (What methods does this class have, and what does each do in a few words?)
-'''
+
 import turtle, random, math
 
 class Game:
